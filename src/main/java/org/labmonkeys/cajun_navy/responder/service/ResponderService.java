@@ -8,6 +8,7 @@ import javax.transaction.Transactional;
 
 import org.labmonkeys.cajun_navy.responder.dto.ResponderDTO;
 import org.labmonkeys.cajun_navy.responder.dto.ResponderStatsDTO;
+import org.labmonkeys.cajun_navy.responder.event.ResponderEventPublisher;
 import org.labmonkeys.cajun_navy.responder.mapper.ResponderMapper;
 import org.labmonkeys.cajun_navy.responder.model.Responder;
 // import org.slf4j.Logger;
@@ -18,6 +19,9 @@ public class ResponderService {
     //private static final Logger log = LoggerFactory.getLogger(ResponderService.class);
 
     @Inject ResponderMapper mapper;
+
+    @Inject
+    ResponderEventPublisher publisher;
     
     @Transactional
     public ResponderStatsDTO getResponderStats() {
@@ -38,54 +42,87 @@ public class ResponderService {
 
     @Transactional
     public List<ResponderDTO> availableResponders() {
-        return null;
+        return mapper.responderEntitiesToDtos(Responder.findByAvailable(0,0));
     }
 
     @Transactional
     public List<ResponderDTO> availableResponders(int limit, int offset) {
-        return null;
+        return mapper.responderEntitiesToDtos(Responder.findByAvailable(limit,offset));
     }
 
     @Transactional
     public List<ResponderDTO> allResponders() {
-        return null;
+        return mapper.responderEntitiesToDtos(Responder.findAllResponders(0,0));
     }
 
     @Transactional
     public List<ResponderDTO> allResponders(int limit, int offset) {
-        return null;
+        return mapper.responderEntitiesToDtos(Responder.findAllResponders(limit,offset));
     }
 
     @Transactional
     public List<ResponderDTO> personResponders() {
-        return null;
+        return mapper.responderEntitiesToDtos(Responder.findPersons(0, 0));
     }
 
     public List<ResponderDTO> personResponders(int limit, int offset) {
-        return null;
+        return mapper.responderEntitiesToDtos(Responder.findPersons(limit, offset));
     }
 
     @Transactional
-    public ResponderDTO createResponder(ResponderDTO responder) {
-        Responder entity = mapper.responderDtoToEntity(responder);
+    public ResponderDTO createResponder(ResponderDTO dto) {
+        Responder entity = mapper.responderDtoToEntity(dto);
         Responder.persist(entity);
-        return mapper.responderEntityToDto(entity);
+        ResponderDTO responder = mapper.responderEntityToDto(entity);
+        publisher.createResponder(responder);
+        return responder;
     }
 
     @Transactional
-    public List<ResponderDTO> createResponders(List<ResponderDTO> responders) {
-        List<Responder> entities = mapper.responderDtosToEntities(responders);
+    public List<ResponderDTO> createResponders(List<ResponderDTO> dtos) {
+        List<Responder> entities = mapper.responderDtosToEntities(dtos);
         Responder.persist(entities);
-        return mapper.responderEntitiesToDtos(entities);
+        List<ResponderDTO> responders = mapper.responderEntitiesToDtos(entities);
+        publisher.createResponders(responders);
+        return responders;
     }
 
     @Transactional
-    public ResponderDTO updateResponder(ResponderDTO responder) {
-        return mapper.responderEntityToDto(Responder.updateResponder(mapper.responderDtoToEntity(responder)));
+    public ResponderDTO updateResponderInfo(ResponderDTO dto) {
+        ResponderDTO responder = mapper.responderEntityToDto(Responder.updateResponderInfo(mapper.responderDtoToEntity(dto)));
+        publisher.updateResponder(responder);
+        return responder;
     }
 
     @Transactional
-    public ResponderDTO updateResponderLocation(ResponderDTO responder) {
-        return mapper.responderEntityToDto(Responder.updateLocation(mapper.responderDtoToEntity(responder)));
+    public ResponderDTO updateResponderAvailable(ResponderDTO dto) {
+        ResponderDTO responder = mapper.responderEntityToDto(Responder.updateResponderAvailable(mapper.responderDtoToEntity(dto)));
+        publisher.updateResponder(responder);
+        return responder;
+    }
+
+    @Transactional
+    public ResponderDTO updateResponderLocation(ResponderDTO dto) {
+        ResponderDTO responder = mapper.responderEntityToDto(Responder.updateLocation(mapper.responderDtoToEntity(dto)));
+        publisher.updateResponderLocation(responder);
+        return responder;
+    }
+
+    @Transactional
+    public void reset() {
+        Responder.reset();
+    }
+
+    @Transactional
+    public void clear(boolean deleteBots, boolean deleteAll) {
+        if (deleteBots) {
+            Responder.deleteBots();
+            Responder.resetPerson();
+        } else if (deleteAll) {
+            Responder.deleteAll();
+        } else {
+            Responder.clearBots();
+            Responder.resetPerson();
+        }
     }
 }

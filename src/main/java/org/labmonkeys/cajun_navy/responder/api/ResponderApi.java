@@ -18,6 +18,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.labmonkeys.cajun_navy.responder.dto.ResponderDTO;
 import org.labmonkeys.cajun_navy.responder.dto.ResponderStatsDTO;
+import org.labmonkeys.cajun_navy.responder.service.ResponderService;
 
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
@@ -28,6 +29,9 @@ public class ResponderApi {
 
     @Inject
     EventBus bus;
+
+    @Inject
+    ResponderService service;
 
     @GET
     @Path("/stats")
@@ -105,11 +109,19 @@ public class ResponderApi {
     }
 
     @PUT
-    @Path("/responder")
+    @Path("/responder/info")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<Response> updateResponder(ResponderDTO dto) {
-        return bus.<ResponderDTO>request("updateResponder", dto).onItem().transform(msg -> Response.ok(msg.body()).build());
+    public Uni<Response> updateResponderInfo(ResponderDTO dto) {
+        return bus.<ResponderDTO>request("updateResponderInfo", dto).onItem().transform(msg -> Response.ok(msg.body()).build());
+    }
+
+    @PUT
+    @Path("/responder/available")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Uni<Response> updateResponderAvailable(ResponderDTO dto) {
+        return bus.<ResponderDTO>request("updateResponderAvailable", dto).onItem().transform(msg -> Response.ok(msg.body()).build());
     }
 
     @PUT
@@ -131,21 +143,29 @@ public class ResponderApi {
     @POST
     @Path("/responders/reset")
     public Response reset() {
-        responderService.reset();
+        service.reset();
         return Response.ok().build();
     }
 
     @POST
     @Path("/responders/clear")
-    public Response clear(@QueryParam("delete") Optional<String> delete) {
+    public Response clear(@QueryParam("deleteBots") Optional<Boolean> delete) {
 
-        if (delete.orElse("").equals("all")) {
-            responderService.deleteAll();
-        } else if (delete.orElse("").equals("bots")) {
-            responderService.clear(true);
-        } else {
-            responderService.clear(false);
-        }
+        service.clear(false, false);
+        return Response.ok().build();
+    }
+
+    @POST
+    @Path("/responders/clear/delete-bots")
+    public Response clearAndDeleteBots() {
+        service.clear(true, false);
+        return Response.ok().build();
+    }
+
+    @POST
+    @Path("/responders/clear/delete-all")
+    public Response clearAndDeleteAll() {
+        service.clear(false, true);
         return Response.ok().build();
     }
 }

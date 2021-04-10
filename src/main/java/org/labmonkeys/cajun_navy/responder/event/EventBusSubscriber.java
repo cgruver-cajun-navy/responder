@@ -22,9 +22,6 @@ public class EventBusSubscriber {
     @Inject
     ResponderService service;
 
-    @Inject
-    EventPublisher publisher;
-
     @ConsumeEvent("stats")
     @Blocking
     public ResponderStatsDTO stats(Message<Object> msg) {
@@ -65,7 +62,6 @@ public class EventBusSubscriber {
     @Blocking
     public ResponderDTO createResponder(ResponderDTO dto) {
         ResponderDTO responder = service.createResponder(dto);
-        publisher.createResponder(responder);
         return responder;
     }
 
@@ -73,15 +69,20 @@ public class EventBusSubscriber {
     @Blocking
     public List<ResponderDTO> createResponders(List<ResponderDTO> dtos) {
         List<ResponderDTO> responders = service.createResponders(dtos);
-        publisher.createResponders(responders);
         return responders;
     }
 
-    @ConsumeEvent("updateResponder")
+    @ConsumeEvent("updateResponderAvailable")
     @Blocking
     public ResponderDTO updateResponder(ResponderDTO dto) {
-        ResponderDTO responder = service.updateResponder(dto);
-        publisher.updateResponder(responder);
+        ResponderDTO responder = service.updateResponderAvailable(dto);
+        return responder;
+    }
+
+    @ConsumeEvent("updateResponderInfo")
+    @Blocking
+    public ResponderDTO updateResponderInfo(ResponderDTO dto) {
+        ResponderDTO responder = service.updateResponderInfo(dto);
         return responder;
     }
 
@@ -89,17 +90,6 @@ public class EventBusSubscriber {
     @Blocking
     public ResponderDTO updateResponderLocation(ResponderDTO dto) {
         ResponderDTO responder = service.updateResponderLocation(dto);
-        publisher.updateResponderLocation(responder);
         return responder;
     }
-
-    // @ConsumeEvent("reset")
-    // @Blocking
-
-    // @ConsumeEvent("clear")
-    // @Blocking
-
-    
-
-    
 }
