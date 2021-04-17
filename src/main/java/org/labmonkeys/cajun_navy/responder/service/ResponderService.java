@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import org.labmonkeys.cajun_navy.responder.dto.ResponderDTO;
+import org.labmonkeys.cajun_navy.responder.dto.ResponderQueryDTO;
 import org.labmonkeys.cajun_navy.responder.dto.ResponderStatsDTO;
 import org.labmonkeys.cajun_navy.responder.event.ResponderEventPublisher;
 import org.labmonkeys.cajun_navy.responder.mapper.ResponderMapper;
@@ -41,32 +42,18 @@ public class ResponderService {
     }
 
     @Transactional
-    public List<ResponderDTO> availableResponders() {
-        return mapper.responderEntitiesToDtos(Responder.findByAvailable(0,0));
+    public List<ResponderDTO> availableResponders(ResponderQueryDTO dto) {
+        return mapper.responderEntitiesToDtos(Responder.findByAvailable(dto.getDisasterId(), dto.getLimit(), dto.getOffset()));
     }
 
     @Transactional
-    public List<ResponderDTO> availableResponders(int limit, int offset) {
-        return mapper.responderEntitiesToDtos(Responder.findByAvailable(limit,offset));
+    public List<ResponderDTO> responders(ResponderQueryDTO dto) {
+        return mapper.responderEntitiesToDtos(Responder.findResponders(dto.getDisasterId(), dto.getLimit(), dto.getOffset()));
     }
 
     @Transactional
-    public List<ResponderDTO> allResponders() {
-        return mapper.responderEntitiesToDtos(Responder.findAllResponders(0,0));
-    }
-
-    @Transactional
-    public List<ResponderDTO> allResponders(int limit, int offset) {
-        return mapper.responderEntitiesToDtos(Responder.findAllResponders(limit,offset));
-    }
-
-    @Transactional
-    public List<ResponderDTO> personResponders() {
-        return mapper.responderEntitiesToDtos(Responder.findPersons(0, 0));
-    }
-
-    public List<ResponderDTO> personResponders(int limit, int offset) {
-        return mapper.responderEntitiesToDtos(Responder.findPersons(limit, offset));
+    public List<ResponderDTO> personResponders(ResponderQueryDTO dto) {
+        return mapper.responderEntitiesToDtos(Responder.findPersons(dto.getDisasterId(), dto.getLimit(), dto.getOffset()));
     }
 
     @Transactional
@@ -96,7 +83,7 @@ public class ResponderService {
 
     @Transactional
     public ResponderDTO updateResponderAvailable(ResponderDTO dto) {
-        ResponderDTO responder = mapper.responderEntityToDto(Responder.updateResponderAvailable(mapper.responderDtoToEntity(dto)));
+        ResponderDTO responder = mapper.responderEntityToDto(Responder.updateResponderStatus(mapper.responderDtoToEntity(dto)));
         publisher.updateResponder(responder);
         return responder;
     }
@@ -121,7 +108,7 @@ public class ResponderService {
         } else if (deleteAll) {
             Responder.deleteAll();
         } else {
-            Responder.clearBots();
+            Responder.resetBots();
             Responder.resetPerson();
         }
     }

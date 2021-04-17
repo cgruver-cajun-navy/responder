@@ -17,11 +17,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.labmonkeys.cajun_navy.responder.dto.ResponderDTO;
+import org.labmonkeys.cajun_navy.responder.dto.ResponderQueryDTO;
 import org.labmonkeys.cajun_navy.responder.dto.ResponderStatsDTO;
 import org.labmonkeys.cajun_navy.responder.service.ResponderService;
 
 import io.smallrye.mutiny.Uni;
-import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.eventbus.EventBus;
 
 @Path("/")
@@ -71,33 +71,47 @@ public class ResponderApi {
     @GET
     @Path("/responders/available")
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<Response> availableResponders(@QueryParam("limit") Optional<Integer> limit, @QueryParam("offset") Optional<Integer> offset) {
-        JsonObject message = new JsonObject();
-        if (limit.isPresent()) {
-            message.put("limit", limit.get());
+    public Uni<Response> availableResponders(@QueryParam("disasterId") Optional<String> disasterId, @QueryParam("limit") Optional<Integer> limit, @QueryParam("offset") Optional<Integer> offset) {
+        ResponderQueryDTO message = new ResponderQueryDTO();
+        if (disasterId.isPresent()) {
+            message.setDisasterId(disasterId.get());
         } else {
-            message.put("limit", 0);
+            message.setDisasterId("");
+        }
+        if (limit.isPresent()) {
+            message.setLimit(limit.get());
+        } else {
+            message.setLimit(0);
         }
         if (offset.isPresent()) {
-            message.put("offset", offset.get());
+            message.setOffset(offset.get());
         } else {
-            message.put("offset", 0);
+            message.setOffset(0);
         }
-        return bus.<List<ResponderDTO>>request("avalableResponders", message).onItem().transform(msg -> Response.ok(msg.body()).build());
+        return bus.<List<ResponderDTO>>request("availableResponders", message).onItem().transform(msg -> Response.ok(msg.body()).build());
     }
 
     @GET
     @Path("/responders")
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<Response> allResponders(@QueryParam("limit") Optional<Integer> limit, @QueryParam("offset") Optional<Integer> offset) {
-        JsonObject message = new JsonObject();
+    public Uni<Response> responders(@QueryParam("disasterId") Optional<String> disasterId, @QueryParam("limit") Optional<Integer> limit, @QueryParam("offset") Optional<Integer> offset) {
+        ResponderQueryDTO message = new ResponderQueryDTO();
+        if (disasterId.isPresent()) {
+            message.setDisasterId(disasterId.get());
+        } else {
+            message.setDisasterId("");
+        }
         if (limit.isPresent()) {
-            message.put("limit", limit.get());
+            message.setLimit(limit.get());
+        } else {
+            message.setLimit(0);
         }
         if (offset.isPresent()) {
-            message.put("offset", offset.get());
+            message.setOffset(offset.get());
+        } else {
+            message.setOffset(0);
         }
-        return bus.<List<ResponderDTO>>request("allResponders", message).onItem().transform(msg -> Response.ok(msg.body()).build());
+        return bus.<List<ResponderDTO>>request("responders", message).onItem().transform(msg -> Response.ok(msg.body()).build());
     }
 
     @POST

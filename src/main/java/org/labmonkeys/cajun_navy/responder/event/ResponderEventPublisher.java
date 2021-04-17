@@ -41,17 +41,17 @@ public class ResponderEventPublisher {
         responderLocationProcessor.onNext(dto);
     }
 
-    @Outgoing("responder-create")
+    @Outgoing("responder-created")
     public Multi<org.eclipse.microprofile.reactive.messaging.Message<ResponderDTO>> responderCreate() {
         return responderCreateProcessor.onItem().transform(this::sendResponderCreate);
     }
 
-    @Outgoing("responder-update")
+    @Outgoing("responder-updated")
     public Multi<org.eclipse.microprofile.reactive.messaging.Message<ResponderDTO>> responderUpdate() {
         return responderUpdateProcessor.onItem().transform(this::sendResponderUpdate);
     }
 
-    @Outgoing("responder-location")
+    @Outgoing("responder-location-updated")
     public Multi<org.eclipse.microprofile.reactive.messaging.Message<ResponderDTO>> responderLocation() {
         return responderLocationProcessor.onItem().transform(this::sendResponderLocation);
     }

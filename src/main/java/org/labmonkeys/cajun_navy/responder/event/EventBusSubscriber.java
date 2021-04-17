@@ -11,6 +11,7 @@ import io.vertx.mutiny.core.eventbus.Message;
 // import org.slf4j.Logger;
 // import org.slf4j.LoggerFactory;
 import org.labmonkeys.cajun_navy.responder.dto.ResponderDTO;
+import org.labmonkeys.cajun_navy.responder.dto.ResponderQueryDTO;
 import org.labmonkeys.cajun_navy.responder.dto.ResponderStatsDTO;
 import org.labmonkeys.cajun_navy.responder.service.ResponderService;
 
@@ -40,22 +41,18 @@ public class EventBusSubscriber {
         return service.getRespondersByName(name);
     }
 
-    @ConsumeEvent("avalableResponders")
+    @ConsumeEvent("availableResponders")
     @Blocking
-    public List<ResponderDTO> avalableResponders(Message<JsonObject> msg) {
-        JsonObject payload = msg.body();
-        Integer limit = payload.getInteger("limit");
-        Integer offset = payload.getInteger("offset");
-        return service.availableResponders(limit, offset);
+    public List<ResponderDTO> availableResponders(Message<ResponderQueryDTO> msg) {
+        ResponderQueryDTO dto = msg.body();
+        return service.availableResponders(dto);
     }
 
-    @ConsumeEvent("allResponders")
+    @ConsumeEvent("responders")
     @Blocking
-    public List<ResponderDTO> allResponders(Message<JsonObject> msg){
-        JsonObject payload = msg.body();
-        Integer limit = payload.getInteger("limit");
-        Integer offset = payload.getInteger("offset");
-        return service.allResponders(limit, offset);
+    public List<ResponderDTO> allResponders(Message<ResponderQueryDTO> msg){
+        ResponderQueryDTO dto = msg.body();
+        return service.responders(dto);
     }
 
     @ConsumeEvent("createResponder")

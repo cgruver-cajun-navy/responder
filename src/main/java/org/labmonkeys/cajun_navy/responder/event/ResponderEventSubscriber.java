@@ -7,7 +7,6 @@ import org.eclipse.microprofile.reactive.messaging.Acknowledgment;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.labmonkeys.cajun_navy.responder.dto.ResponderDTO;
-import org.labmonkeys.cajun_navy.responder.service.ResponderService;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 
@@ -22,9 +21,8 @@ public class ResponderEventSubscriber {
     //private final static Logger log = LoggerFactory.getLogger(ResponderEventSubscriber.class);
     
     @Inject EventBus bus;
-    @Inject ResponderService service;
 
-    @Incoming("update-responder-location")
+    @Incoming("responder-location-update")
     @Acknowledgment(Acknowledgment.Strategy.MANUAL)
     public CompletionStage<CompletionStage<Void>> updateResponderLocation(Message<ResponderDTO> message) {
         return CompletableFuture.supplyAsync(() -> {
@@ -33,7 +31,7 @@ public class ResponderEventSubscriber {
         });
     }
 
-    @Incoming("update-responder-info")
+    @Incoming("responder-info-update")
     @Acknowledgment(Acknowledgment.Strategy.MANUAL)
     public CompletionStage<CompletionStage<Void>> updateResponderInfo (Message<ResponderDTO> message) {
         return CompletableFuture.supplyAsync(() -> {
@@ -42,7 +40,7 @@ public class ResponderEventSubscriber {
         });
     }
 
-    @Incoming("update-responder-available")
+    @Incoming("responder-availability-update")
     @Acknowledgment(Acknowledgment.Strategy.MANUAL)
     public CompletionStage<CompletionStage<Void>> updateResponderAvailable (Message<ResponderDTO> message) {
         return CompletableFuture.supplyAsync(() -> {

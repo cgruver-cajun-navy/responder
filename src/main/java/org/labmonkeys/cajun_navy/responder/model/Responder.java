@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.labmonkeys.cajun_navy.responder.dto.ResponderDTO.STATUS;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import lombok.Data;
@@ -29,6 +30,9 @@ public class Responder extends PanacheEntityBase{
     @Column(name = "responder_id", updatable = false, nullable = false, unique = true)
     private String responderId;
 
+    @Column(name = "disaster_id")
+    private String disasterId;
+
     @Column(name = "responder_name", updatable = false, nullable = false)
     private String name;
 
@@ -47,50 +51,67 @@ public class Responder extends PanacheEntityBase{
     @Column(name = "medical_kit")
     private Boolean medicalKit;
 
-    @Column(name = "available")
-    private Boolean available;
-
     @Column(name = "person", updatable = false, nullable = false)
     private Boolean person;
 
-    @Column(name = "enrolled")
-    private Boolean enrolled;
+    @Column(name = "status")
+    private STATUS status;
 
     public static Responder findByResponderId(String responderId) {
         return find("responderId", responderId).firstResult();
+    }
+
+    public static Responder findByDisasterId(String disasterId) {
+        return find("disasterId", disasterId).firstResult();
     }
 
     public static List<Responder> findByName(String name) {
         return find("SELECT i from Responder i WHERE LOWER(i.name) LIKE :name", name.toLowerCase()).list();
     }
 
-    public static List<Responder> findByAvailable(int limit, int offset) {
+    public static List<Responder> findByAvailable(String disasterId, int limit, int offset) {
         if (limit == 0) {
-            return find("available, enrolled", true, true).list();
+            return find("status, disasterId", STATUS.AVAILABLE, disasterId).list();
         } else {
             int first = offset;
             int last = offset+limit-1;
-            return find("available, enrolled", true, true).range(first, last).list();
+            return find("status, disasterId", STATUS.AVAILABLE, disasterId).range(first, last).list();
         }
     }
 
-    public static List<Responder> findAllResponders(int limit, int offset) {
-        if (limit == 0) {
-            return findAll().list();
+    public static List<Responder> findResponders(String disasterId, int limit, int offset) {
+        if(limit == 0) {
+            if (disasterId == "") {
+                return findAll().list();
+            } else {
+                return find("disasterId", disasterId).list();
+            }
         } else {
             int first = offset;
             int last = offset+limit-1;
-            return findAll().range(first, last).list();
+            if (disasterId == "") {
+                return findAll().range(first, last).list();
+            } else {
+                return find("disasterId", disasterId).range(first, last).list();
+            }
         }
     }
 
-    public static List<Responder> findPersons(int limit, int offset) {
-        if (limit == 0) {
-            return find("person", true).list();
+    public static List<Responder> findPersons(String disasterId, int limit, int offset) {
+        if(limit == 0) {
+            if (disasterId == "") {
+                return find("person", true).list();
+            } else {
+                return find("disasterId, person", disasterId, true).list();
+            }
         } else {
             int first = offset;
             int last = offset+limit-1;
-            return find("person", true).range(first, last).list();
+            if (disasterId == "") {
+                return find("person", true).range(first, last).list();
+            } else {
+                return find("disasterId, person", disasterId, true).range(first, last).list();
+            }
         }
     }
 
@@ -105,11 +126,11 @@ public class Responder extends PanacheEntityBase{
     }
 
     public static Long countActiveResponders() {
-        return count("enrolled, available", true, false);
+        return count("status", STATUS.ASSIGNED);
     }
 
     public static Long countEnrolledResponders() {
-        return count("enrolled", true);
+        return count() - count("status", STATUS.OFF_LINE);
     }
 
     public static Long countAllResponders() {
@@ -126,25 +147,21 @@ public class Responder extends PanacheEntityBase{
         return find("responderId", responder.getResponderId()).firstResult();
     }
 
-    public static Responder updateResponderAvailable(Responder entity) {
-        update("available = ?1, enrolled = $2 where responderId = ?3", entity.getAvailable(), entity.getEnrolled(), entity.getResponderId());
+    public static Responder updateResponderStatus(Responder entity) {
+        update("status = ?1 where responderId = ?2", entity.getStatus(), entity.getResponderId());
         return find("responderId", entity.getResponderId()).firstResult();
     }
 
     public static void reset() {
-        update("available = true, enrolled = false");
+        update("status = ?1", STATUS.OFF_LINE);
     }
 
-    public static void resetBot() {
-        update("available = true, enrolled = false where person = false");
+    public static void resetBots() {
+        update("status = ?1 where person = false", STATUS.OFF_LINE);
     }
 
     public static void resetPerson() {
-        update("available = true, enrolled = false, latitude = null, longitude = null where person = true");
-    }
-
-    public static void clearBots() {
-        update("available = false, enrolled = false where person = false");
+        update("status = ?1, latitude = null, longitude = null where person = true", STATUS.OFF_LINE);
     }
 
     public static void deleteBots() {
