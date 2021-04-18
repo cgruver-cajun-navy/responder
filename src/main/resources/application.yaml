@@ -3,14 +3,6 @@ quarkus:
     name: responder-service
   log:
     level: INFO
-    console:
-      enable: true
-      level: DEBUG
-    category: 
-      "com.redhat.cajun.navy":
-         level: DEBUG
-      "org.eclipse.yasson":
-        level: ERROR
   datasource:
     db-kind: mariadb
     jdbc:

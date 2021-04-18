@@ -77,14 +77,14 @@ public class ResponderService {
     @Transactional
     public ResponderDTO updateResponderInfo(ResponderDTO dto) {
         ResponderDTO responder = mapper.responderEntityToDto(Responder.updateResponderInfo(mapper.responderDtoToEntity(dto)));
-        publisher.updateResponder(responder);
+        publisher.updateResponderInfo(responder);
         return responder;
     }
 
     @Transactional
     public ResponderDTO updateResponderAvailable(ResponderDTO dto) {
         ResponderDTO responder = mapper.responderEntityToDto(Responder.updateResponderStatus(mapper.responderDtoToEntity(dto)));
-        publisher.updateResponder(responder);
+        publisher.updateResponderAvailable(responder);
         return responder;
     }
 

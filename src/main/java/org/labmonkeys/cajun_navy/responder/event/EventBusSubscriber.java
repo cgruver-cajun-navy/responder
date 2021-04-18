@@ -6,7 +6,6 @@ import javax.enterprise.context.ApplicationScoped;
 import io.quarkus.vertx.ConsumeEvent;
 import javax.inject.Inject;
 import io.smallrye.common.annotation.Blocking;
-import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.eventbus.Message;
 // import org.slf4j.Logger;
 // import org.slf4j.LoggerFactory;

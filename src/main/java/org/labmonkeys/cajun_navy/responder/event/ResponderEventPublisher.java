@@ -1,15 +1,11 @@
 package org.labmonkeys.cajun_navy.responder.event;
 
-import java.time.OffsetDateTime;
 import java.util.List;
-
 import javax.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.reactive.messaging.Outgoing;
 import io.smallrye.mutiny.Multi;
-import io.smallrye.reactive.messaging.ce.OutgoingCloudEventMetadata;
 import io.smallrye.reactive.messaging.kafka.KafkaRecord;
 import io.smallrye.mutiny.operators.multi.processors.UnicastProcessor;
-
 import org.labmonkeys.cajun_navy.responder.dto.ResponderDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +16,8 @@ public class ResponderEventPublisher {
     private static final Logger log = LoggerFactory.getLogger(EventBusSubscriber.class);
     
     private final UnicastProcessor<ResponderDTO> responderCreateProcessor = UnicastProcessor.create();
-    private final UnicastProcessor<ResponderDTO> responderUpdateProcessor = UnicastProcessor.create();
+    private final UnicastProcessor<ResponderDTO> responderUpdateInfoProcessor = UnicastProcessor.create();
+    private final UnicastProcessor<ResponderDTO> responderUpdateAvailableProcessor = UnicastProcessor.create();
     private final UnicastProcessor<ResponderDTO> responderLocationProcessor = UnicastProcessor.create();
     
     public void createResponder(ResponderDTO dto) {
@@ -33,8 +30,12 @@ public class ResponderEventPublisher {
         }
     }
 
-    public void updateResponder(ResponderDTO dto) {
-        responderUpdateProcessor.onNext(dto);
+    public void updateResponderInfo(ResponderDTO dto) {
+        responderUpdateInfoProcessor.onNext(dto);
+    }
+
+    public void updateResponderAvailable(ResponderDTO dto) {
+        responderUpdateAvailableProcessor.onNext(dto);
     }
 
     public void updateResponderLocation(ResponderDTO dto) {
@@ -47,8 +48,13 @@ public class ResponderEventPublisher {
     }
 
     @Outgoing("responder-updated")
-    public Multi<org.eclipse.microprofile.reactive.messaging.Message<ResponderDTO>> responderUpdate() {
-        return responderUpdateProcessor.onItem().transform(this::sendResponderUpdate);
+    public Multi<org.eclipse.microprofile.reactive.messaging.Message<ResponderDTO>> responderUpdateInfo() {
+        return responderUpdateInfoProcessor.onItem().transform(this::sendResponderUpdateInfo);
+    }
+
+    @Outgoing("responder-available")
+    public Multi<org.eclipse.microprofile.reactive.messaging.Message<ResponderDTO>> responderUpdateAvailable() {
+        return responderUpdateAvailableProcessor.onItem().transform(this::sendResponderUpdateAvailable);
     }
 
     @Outgoing("responder-location-updated")
@@ -57,23 +63,18 @@ public class ResponderEventPublisher {
     }
 
     private org.eclipse.microprofile.reactive.messaging.Message<ResponderDTO> sendResponderCreate(ResponderDTO responder) {
-        log.debug("IncidentReportedEvent: " + responder);
-        return KafkaRecord.of(responder.getResponderId(), responder)
-                .addMetadata(OutgoingCloudEventMetadata.builder().withType("ResponderCreatedEvent")
-                        .withTimestamp(OffsetDateTime.now().toZonedDateTime()).build());
+        return KafkaRecord.of(null, responder);
     }
 
-    private org.eclipse.microprofile.reactive.messaging.Message<ResponderDTO> sendResponderUpdate(ResponderDTO responder) {
-        log.debug("IncidentReportedEvent: " + responder);
-        return KafkaRecord.of(responder.getResponderId(), responder)
-                .addMetadata(OutgoingCloudEventMetadata.builder().withType("ResponderUpdatedEvent")
-                        .withTimestamp(OffsetDateTime.now().toZonedDateTime()).build());
+    private org.eclipse.microprofile.reactive.messaging.Message<ResponderDTO> sendResponderUpdateInfo(ResponderDTO responder) {
+        return KafkaRecord.of(null, responder);
+    }
+
+    private org.eclipse.microprofile.reactive.messaging.Message<ResponderDTO> sendResponderUpdateAvailable(ResponderDTO responder) {
+        return KafkaRecord.of(null, responder);
     }
 
     private org.eclipse.microprofile.reactive.messaging.Message<ResponderDTO> sendResponderLocation(ResponderDTO responder) {
-        log.debug("IncidentReportedEvent: " + responder);
-        return KafkaRecord.of(responder.getResponderId(), responder)
-                .addMetadata(OutgoingCloudEventMetadata.builder().withType("ResponderLocationEvent")
-                        .withTimestamp(OffsetDateTime.now().toZonedDateTime()).build());
+        return KafkaRecord.of(null, responder);
     }
 }
